@@ -2,13 +2,16 @@ package xyz.openatbp.extension.game.champions;
 
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
 import com.smartfoxserver.v2.entities.User;
 
 import xyz.openatbp.extension.ATBPExtension;
+import xyz.openatbp.extension.Console;
 import xyz.openatbp.extension.ExtensionCommands;
 import xyz.openatbp.extension.RoomHandler;
 import xyz.openatbp.extension.game.AbilityRunnable;
@@ -46,26 +49,60 @@ public class Billy extends UserActor {
 
     public Billy(User u, ATBPExtension parentExt) {
         super(u, parentExt);
-        /*ArrayList<Vector<Float>>[] mainColliders = parentExt.getColliders("main");
+        ArrayList<Vector<Float>>[] mainColliders = parentExt.getColliders("main");
+
+        // 2, 4, 7, 21
+
+        // looks like there are 2 arrays for the same hole? index 14 and x
+
+        ArrayList<Vector<Float>> firstCollider = mainColliders[24];
+
+        Console.debugLog(firstCollider);
+
+        for (Vector<Float> vertex : firstCollider) {
+            float x = vertex.get(0);
+            float z = vertex.get(1);
+
+            ExtensionCommands.createWorldFX(
+                    parentExt,
+                    room,
+                    id,
+                    "skully",
+                    String.valueOf(Math.random()),
+                    1000 * 60 * 15,
+                    x,
+                    z,
+                    false,
+                    team,
+                    0f);
+        }
+
+        /*int collider = 0;
         for (ArrayList<Vector<Float>> currentColliderList : mainColliders) {
+            collider++;
+            if (collider == 1) {
+                Console.debugLog(currentColliderList.get(0));
+            }
             for (Vector<Float> currentVertex : currentColliderList) {
-                Console.debugLog("current vertex: " + currentVertex);
 
-                float xCord = currentVertex.get(0);
-                float yCord = currentVertex.get(1);
+                */
+        /*float xCord = currentVertex.get(0);
+        float yCord = currentVertex.get(1);
 
-                ExtensionCommands.createWorldFX(
-                        parentExt,
-                        room,
-                        id,
-                        "skully",
-                        String.valueOf(Math.random()),
-                        1000 * 60 * 15,
-                        xCord,
-                        yCord,
-                        false,
-                        team,
-                        0f);
+        ExtensionCommands.createWorldFX(
+                parentExt,
+                room,
+                id,
+                "skully",
+                String.valueOf(Math.random()),
+                1000 * 60 * 15,
+                xCord,
+                yCord,
+                false,
+                team,
+                0f);*/
+        /*
+
             }
         }*/
     }

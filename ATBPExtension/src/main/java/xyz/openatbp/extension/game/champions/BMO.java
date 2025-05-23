@@ -196,6 +196,8 @@ public class BMO extends UserActor {
                             this.team);
                     ExtensionCommands.playSound(
                             this.parentExt, this.room, this.id, "sfx_bmo_camera", this.location);
+
+                    Console.debugLog("\"x\": " + location.getX() + "\"z\": " + location.getY());
                 } catch (Exception exception) {
                     logExceptionMessage(avatar, ability);
                     exception.printStackTrace();

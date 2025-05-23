@@ -53,6 +53,8 @@ public abstract class Actor {
     protected Map<String, FxHandler> fxHandlers = new HashMap<>();
     protected UserActor charmer;
     protected long lastHitElectrodeGun = -1;
+    protected Point2D currentDestination;
+    protected boolean isMoving;
 
     public double getPHealth() {
         return currentHealth / maxHealth;
@@ -85,8 +87,6 @@ public abstract class Actor {
 
     public void setLocation(Point2D location) {
         this.location = location;
-        this.movementLine = new Line2D.Float(location, location);
-        this.timeTraveled = 0f;
     }
 
     public String getAvatar() {
@@ -135,6 +135,49 @@ public abstract class Actor {
     public void setState(ActorState state, boolean enabled) {
         this.states.put(state, enabled);
         ExtensionCommands.updateActorState(this.parentExt, this.room, this.id, state, enabled);
+    }
+
+    public void handleMovementRequest(Point2D destination) {
+        if (location.equals(destination)) return;
+
+        currentDestination = destination;
+        isMoving = true;
+        float speed = (float) getPlayerStat("speed");
+
+        ExtensionCommands.moveActor(parentExt, room, id, location, destination, speed, true);
+        ExtensionCommands.snapActor(parentExt, room, id, location, location, true);
+    }
+
+    public void updateHitbox(float deltaTimeSeconds) {
+        if (!isMoving || currentDestination == null) {
+            return;
+        }
+
+        double dirX = currentDestination.getX() - location.getX();
+        double dirY = currentDestination.getY() - location.getY();
+
+        double distanceToDest = location.distance(currentDestination);
+
+        float speed = (float) getPlayerStat("speed");
+
+        double distanceThisTick = speed * deltaTimeSeconds;
+
+        if (distanceToDest <= distanceThisTick) {
+            setLocation(currentDestination);
+            isMoving = false;
+            currentDestination = null;
+
+            Console.debugLog("Actor " + this + " reached destination " + location);
+        } else {
+            double normalizedDirX = dirX / distanceToDest;
+            double normalizedDirY = dirY / distanceToDest;
+
+            float newX = (float) (location.getX() + normalizedDirX * distanceThisTick);
+            float newY = (float) (location.getY() + normalizedDirY * distanceThisTick);
+
+            Point2D newLocation = new Point2D.Float(newX, newY);
+            setLocation(newLocation);
+        }
     }
 
     public double getStat(String stat) {

@@ -45,7 +45,7 @@ public class UserActor extends Actor {
     protected static final int ROBO_SLOW_CD = 10000;
     protected static final int SIMON_GLASSES_RANGE = 5;
 
-    protected static final int BASIC_ATTACK_DELAY = 500;
+    public static final int BASIC_ATTACK_DELAY = 500;
     protected static final double DASH_SPEED = 20d;
     protected static final int HEALTH_PACK_REGEN = 15;
     protected static final float DC_AD_BUFF = 1.2f;
@@ -74,9 +74,8 @@ public class UserActor extends Actor {
     protected Map<String, ScheduledFuture<?>> iconHandlers = new HashMap<>();
     protected int idleTime = 0;
     protected boolean changeTowerAggro = false;
-    protected boolean isDashing = false;
     private long lastHit = 0;
-    protected boolean isAutoAttacking = false;
+
     // Set debugging options via config.properties next to the extension jar
     protected static boolean movementDebug;
     private static boolean invincibleDebug;
@@ -116,6 +115,9 @@ public class UserActor extends Actor {
     protected Long lastZeldronBuff = 0L;
     protected Long lastRoboSlow = 0L;
     protected HashMap<UserActor, Integer> simonGlassesBuffProviders = new HashMap<>(2);
+
+    protected boolean isDashingOrLeaping = false;
+    protected boolean isAutoAttacking = false;
 
     // TODO: Add all stats into UserActor object instead of User Variables
     public UserActor(User u, ATBPExtension parentExt) {
@@ -172,6 +174,10 @@ public class UserActor extends Actor {
                     2);
         if (speedDebug) this.setStat("speed", 20);
         if (damageDebug) this.setStat("attackDamage", 1000);
+    }
+
+    public boolean canPerformNewMove() {
+        return canMove && !isDashingOrLeaping && !hasMovementCC();
     }
 
     @Override
@@ -348,7 +354,7 @@ public class UserActor extends Actor {
     }
 
     public boolean getIsDashing() {
-        return this.isDashing;
+        return this.isDashingOrLeaping;
     }
 
     public boolean getIsAutoAttacking() {
@@ -432,11 +438,7 @@ public class UserActor extends Actor {
                 if (Math.random() < moonChance) {
                     Console.debugLog("Moon blocked damage! Chance: " + moonChance);
                     ExtensionCommands.playSound(
-                            this.parentExt,
-                            this.room,
-                            this.id,
-                            "sfx_junk_battle_moon",
-                            this.getRelativePoint(false));
+                            this.parentExt, this.room, this.id, "sfx_junk_battle_moon", location);
                     return false;
                 }
             }
@@ -671,7 +673,7 @@ public class UserActor extends Actor {
     }
 
     public Point2D dash(Point2D dest, boolean noClip, double dashSpeed) {
-        this.isDashing = true;
+        this.isDashingOrLeaping = true;
         Point2D dashPoint =
                 MovementManager.getDashPoint(this, new Line2D.Float(this.location, dest));
         if (dashPoint == null) dashPoint = this.location;
@@ -693,7 +695,7 @@ public class UserActor extends Actor {
         double time = dashPoint.distance(this.location) / dashSpeed;
         int timeMs = (int) (time * 1000d);
         this.stopMoving(timeMs);
-        Runnable setIsDashing = () -> this.isDashing = false;
+        Runnable setIsDashing = () -> this.isDashingOrLeaping = false;
         parentExt.getTaskScheduler().schedule(setIsDashing, timeMs, TimeUnit.MILLISECONDS);
         ExtensionCommands.moveActor(
                 this.parentExt,
@@ -709,7 +711,7 @@ public class UserActor extends Actor {
     }
 
     public void dash(Point2D dest, double dashSpeed) {
-        this.isDashing = true;
+        this.isDashingOrLeaping = true;
         if (movementDebug)
             ExtensionCommands.createWorldFX(
                     this.parentExt,
@@ -728,7 +730,7 @@ public class UserActor extends Actor {
         double time = dest.distance(this.location) / dashSpeed;
         int timeMs = (int) (time * 1000d);
         this.stopMoving(timeMs);
-        Runnable setIsDashing = () -> this.isDashing = false;
+        Runnable setIsDashing = () -> this.isDashingOrLeaping = false;
         parentExt.getTaskScheduler().schedule(setIsDashing, timeMs, TimeUnit.MILLISECONDS);
         ExtensionCommands.moveActor(
                 this.parentExt, this.room, this.id, this.location, dest, (float) dashSpeed, true);
@@ -1036,6 +1038,11 @@ public class UserActor extends Actor {
             else return;
         }
 
+        if (isMoving) {
+            float SERVER_TICK_SECONDS = 0.1f;
+            updateHitbox(SERVER_TICK_SECONDS);
+        }
+
         RoomHandler rh = parentExt.getRoomHandler(room.getName());
         String itemName = "junk_2_simon_petrikovs_glasses";
 
@@ -1134,22 +1141,9 @@ public class UserActor extends Actor {
                     0f);
         }
 
-        if (this.canMove()
-                && !this.isAutoAttacking
-                && !this.isDashing
-                && this.queuedDest != null
-                && this.target == null) { // TODO: This could probably just be merged into canMove
-            this.moveWithCollision(this.queuedDest);
-            this.queuedDest = null;
-        }
-        if (!this.isStopped()) {
-            this.updateMovementTime();
-        }
         if (this.hits > 0) {
             this.hits -= 0.1d;
         } else if (this.hits < 0) this.hits = 0;
-        this.location = this.getRelativePoint(false);
-        this.handlePathing();
 
         if (!this.flameCloakEffectActivated
                 && ChampionData.getJunkLevel(this, "junk_4_flame_cloak") > 0) {

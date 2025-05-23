@@ -161,13 +161,16 @@ public class ExtensionCommands {
         float dz = (float) d.getY();
         if (Float.isNaN(dx)) dx = px;
         if (Float.isNaN(dz)) dz = pz;
+
+        // WHY was 0.1f added here before??
+
         for (User u : room.getUserList()) {
             ISFSObject data = new SFSObject();
             data.putUtfString("i", id);
             data.putFloat("px", (float) p.getX());
             data.putFloat("pz", (float) p.getY());
-            data.putFloat("dx", dx + 0.1f);
-            data.putFloat("dz", dz + 0.1f);
+            data.putFloat("dx", dx + 0.01f);
+            data.putFloat("dz", dz + 0.01f);
             data.putFloat("s", speed);
             data.putBool("o", orient);
             parentExt.send("cmd_move_actor", data, u);
