@@ -173,12 +173,7 @@ public abstract class Actor {
         for (Path2D obstaclePath : mainMapObstaclePaths) {
             if (isLineIntersectingPath(movementLine, obstaclePath)) {
                 Console.debugLog(
-                        "MOVEMENT LINE + "
-                                + location
-                                + " to"
-                                + destination
-                                + " intersects "
-                                + obstaclePath.getBounds2D());
+                        "MOVEMENT LINE " + "INTERSECTS WITH " + obstaclePath.getBounds2D());
                 return true;
             }
         }
