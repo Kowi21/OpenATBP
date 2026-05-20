@@ -3,9 +3,7 @@ package xyz.openatbp.extension.game.champions;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -43,8 +41,6 @@ public class BMO extends UserActor {
     private long lastWSound = 0;
     private boolean ultSlowActive = false;
     private boolean passiveFxRemoved = false;
-
-    private Map<Actor, Long> actorsWithPassiveSlow = new HashMap<>();
 
     public BMO(User u, ATBPExtension parentExt) {
         super(u, parentExt);
@@ -350,10 +346,7 @@ public class BMO extends UserActor {
     }
 
     private void applySlow(Actor a) {
-        long lastProc = actorsWithPassiveSlow.getOrDefault(a, -1L);
-
-        if (lastProc == -1 || System.currentTimeMillis() - lastProc > PASSIVE_SLOW_DURATION) {
-            actorsWithPassiveSlow.put(a, System.currentTimeMillis());
+        if (!a.getEffectManager().hasEffect(id + "_bmo_passive_slow")) {
             a.getEffectManager()
                     .addState(
                             ActorState.SLOWED,

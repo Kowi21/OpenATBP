@@ -7,7 +7,7 @@ public class StatModifier {
     private final ModifierType type;
     private ModifierIntent intent;
     private final int durationMs;
-    private final long startTime;
+    private long startTime;
 
     public StatModifier(
             String effectId,
@@ -72,5 +72,9 @@ public class StatModifier {
 
     public boolean isExpired() {
         return System.currentTimeMillis() - this.startTime >= this.durationMs;
+    }
+
+    public void setStartTime(long newStartTime) {
+        this.startTime = newStartTime;
     }
 }

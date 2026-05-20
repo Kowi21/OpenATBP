@@ -107,20 +107,30 @@ public class Neptr extends UserActor {
                 ExtensionCommands.playSound(
                         this.parentExt, this.room, this.id, "vo/vo_neptr_passive", this.location);
             }
-            effectManager.addEffect(
-                    this.id + "_neptr_passive_speed",
-                    "speed",
-                    PASSIVE_SPEED_PERCENT,
-                    ModifierType.MULTIPLICATIVE,
-                    ModifierIntent.BUFF,
-                    PASSIVE_SPEED_DURATION);
-            effectManager.addEffect(
-                    this.id + "_neptr_passive_as",
-                    "attackSpeed",
-                    PASSIVE_ATTACK_SPEED_PERCENT,
-                    ModifierType.MULTIPLICATIVE,
-                    ModifierIntent.BUFF,
-                    PASSIVE_ATTACK_SPEED_DURATION);
+
+            if (effectManager.hasEffect(id + "_neptr_passive_speed")) {
+                effectManager.refreshEffect(id + "_neptr_passive_speed");
+            } else {
+                effectManager.addEffect(
+                        this.id + "_neptr_passive_speed",
+                        "speed",
+                        PASSIVE_SPEED_PERCENT,
+                        ModifierType.MULTIPLICATIVE,
+                        ModifierIntent.BUFF,
+                        PASSIVE_SPEED_DURATION);
+            }
+
+            if (effectManager.hasEffect(id + "_neptr_passive_as")) {
+                effectManager.refreshEffect(id + "_neptr_passive_as");
+            } else {
+                effectManager.addEffect(
+                        this.id + "_neptr_passive_as",
+                        "attackSpeed",
+                        PASSIVE_ATTACK_SPEED_PERCENT,
+                        ModifierType.MULTIPLICATIVE,
+                        ModifierIntent.BUFF,
+                        PASSIVE_ATTACK_SPEED_DURATION);
+            }
 
             if (this.passiveActive) {
                 ExtensionCommands.removeStatusIcon(this.parentExt, this.player, "passive");

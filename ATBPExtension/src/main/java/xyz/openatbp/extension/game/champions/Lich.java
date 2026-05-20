@@ -45,8 +45,6 @@ public class Lich extends UserActor {
     private boolean disableQOnPoly = false;
     private long qStartTime = 0L;
 
-    private Map<Actor, Long> actorsWithQSlow = new HashMap<>();
-
     public Lich(User u, ATBPExtension parentExt) {
         super(u, parentExt);
         lastSkullySpawn = 0;
@@ -401,17 +399,16 @@ public class Lich extends UserActor {
     }
 
     private void applySlow(Actor a) {
-        long lastProc = actorsWithQSlow.getOrDefault(a, -1L);
-
-        if (lastProc == -1
-                || System.currentTimeMillis() - lastProc > Q_SLOW_DURATION && a.isNotLeaping()) {
+        if (a == null) return;
+        if (!a.getEffectManager().hasEffect(id + "_lich_q_slow")) {
             a.getEffectManager()
                     .addState(
                             ActorState.SLOWED,
                             id + "_lich_q_slow",
                             Q_SLOW_PERCENT,
                             Q_SLOW_DURATION);
-            actorsWithQSlow.put(a, System.currentTimeMillis());
+        } else {
+            a.getEffectManager().refreshEffect(id + "_lich_q_slow");
         }
     }
 

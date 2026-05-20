@@ -58,14 +58,14 @@ public class EffectManager {
         return states;
     }
 
-    private void handleStateEffect(ActorState state, double modifier, int durationMs) {
+    private void handleStateEffect(
+            ActorState state, String stateId, double modifier, int durationMs) {
         actor.onStateChange(state, true);
-
         switch (state) {
             case SLOWED:
                 StatModifier m =
                         new StatModifier(
-                                actor.getId() + "_slow",
+                                stateId,
                                 "speed",
                                 modifier,
                                 ModifierType.MULTIPLICATIVE,
@@ -92,11 +92,7 @@ public class EffectManager {
 
             case POLYMORPH:
                 actor.interruptDash(false);
-                addState(
-                        ActorState.SLOWED,
-                        actor.getId() + "_poly_slow",
-                        POLYMORPH_SLOW,
-                        durationMs);
+                addState(ActorState.SLOWED, stateId, POLYMORPH_SLOW, durationMs);
                 if (actor.hasCustomSwapToPoly()) actor.customSwapToPoly();
                 else handleSwapToPoly();
                 break;
@@ -105,6 +101,13 @@ public class EffectManager {
                 removeEffects();
                 break;
         }
+    }
+
+    public void refreshEffect(String effectId) {
+        modifiers.stream()
+                .filter(m -> m.getEffectId().equals(effectId))
+                .findFirst()
+                .ifPresent(modifier -> modifier.setStartTime(System.currentTimeMillis()));
     }
 
     private boolean canMoveDuringCharmOrFear(ActorState stateToApply) {
@@ -158,7 +161,7 @@ public class EffectManager {
                     new ActorStateEffect(state, stateId, modifier, durationMs);
             stateEffects.add(stateEffect);
 
-            handleStateEffect(state, modifier, durationMs);
+            handleStateEffect(state, stateId, modifier, durationMs);
             setState(state, true);
         }
     }
@@ -179,7 +182,7 @@ public class EffectManager {
             ActorStateEffect stateEffect =
                     new ActorStateEffect(state, stateId, modifier, durationMs);
             stateEffects.add(stateEffect);
-            handleStateEffect(state, modifier, durationMs);
+            handleStateEffect(state, stateId, modifier, durationMs);
             setState(state, true);
 
             ExtensionCommands.createActorFX(

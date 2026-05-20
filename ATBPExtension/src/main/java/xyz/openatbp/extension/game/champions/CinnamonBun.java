@@ -1,9 +1,7 @@
 package xyz.openatbp.extension.game.champions;
 
 import java.awt.geom.Point2D;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -40,8 +38,6 @@ public class CinnamonBun extends UserActor {
     private AbilityShape wPolygon = null;
     private long wStartTime = 0;
     private long lastUltTick = 0;
-
-    private Map<Actor, Long> actorsWithWSlow = new HashMap<>();
 
     public CinnamonBun(User u, ATBPExtension parentExt) {
         super(u, parentExt);
@@ -114,17 +110,16 @@ public class CinnamonBun extends UserActor {
                     if (isNeitherStructureNorAlly(a)
                             && wPolygon.contains(a.getLocation(), a.getCollisionRadius())
                             && a.isNotLeaping()) {
-                        long lastProc = actorsWithWSlow.getOrDefault(a, -1L);
 
-                        if (lastProc == -1
-                                || System.currentTimeMillis() - lastProc > W_SLOW_DURATION) {
-                            actorsWithWSlow.put(a, System.currentTimeMillis());
+                        if (!a.getEffectManager().hasEffect(id + "_cb_w_slow")) {
                             a.getEffectManager()
                                     .addState(
                                             ActorState.SLOWED,
                                             id + "_cb_w_slow",
                                             W_SLOW_PERCENT,
                                             W_SLOW_DURATION);
+                        } else {
+                            a.getEffectManager().refreshEffect(id + "_cb_w_slow");
                         }
                     }
                 }

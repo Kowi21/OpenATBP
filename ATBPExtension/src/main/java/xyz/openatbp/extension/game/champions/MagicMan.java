@@ -40,7 +40,6 @@ public class MagicMan extends UserActor {
     private boolean passiveActivated = false;
     private Point2D wLocation = null;
     private Point2D wDest = null;
-    private boolean ultStarted;
     private int eDashTime;
     private int wUses = 0;
     private MagicManClone magicManClone;
@@ -535,13 +534,19 @@ public class MagicMan extends UserActor {
                             parentExt, MagicMan.this, target, (int) damage, "basicAttack")
                     .run();
             if (this.target.getActorType() == ActorType.PLAYER) {
-                effectManager.addEffect(
-                        id + "_magic_man_passive_speed",
-                        "speed",
-                        PASSIVE_SPEED_PERCENT,
-                        ModifierType.MULTIPLICATIVE,
-                        ModifierIntent.BUFF,
-                        PASSIVE_SPEED_DURATION);
+
+                if (effectManager.hasEffect(id + "_magic_man_passive_speed")) {
+                    effectManager.refreshEffect(id + "_magic_man_passive_speed");
+                } else {
+                    effectManager.addEffect(
+                            id + "_magic_man_passive_speed",
+                            "speed",
+                            PASSIVE_SPEED_PERCENT,
+                            ModifierType.MULTIPLICATIVE,
+                            ModifierIntent.BUFF,
+                            PASSIVE_SPEED_DURATION);
+                }
+
                 if (!passiveActivated) {
                     ExtensionCommands.addStatusIcon(
                             parentExt,

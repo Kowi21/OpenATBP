@@ -765,7 +765,7 @@ public abstract class RoomHandler implements Runnable {
         RoomGroup roomGroup = GameManager.getRoomGroupEnum(room.getGroupId());
         GameMap map = GameManager.getMap(roomGroup);
 
-        String[] spawns = map == GameMap.BATTLE_LAB ? GameManager.L1_SPAWNS : GameManager.L2_SPAWNS;
+        String[] spawns = map == GameMap.BATTLE_LAB ? GameManager.L2_SPAWNS : GameManager.L1_SPAWNS;
 
         for (String s : spawns) {
             if (!s.contains(monster)) continue;
